@@ -25,7 +25,7 @@ Phaser3のライブラリで物理演算され、自動的に判定してくれ�
  
 以下のアドレスでプレイすることができます。
 
-[物理演算アクションゲーム1](https://tinycore-hisanori.github.io/phaser3_simpleQuiz1/)
+[物理演算アクションゲーム1](https://tinycore-hisanori.github.io/phaser3_physicsAction1/)
 
  
 # Features
