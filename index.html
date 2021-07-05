@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser.min.js"></script>
+  </head>
+  <body>
+    <script>
+      class titleScene extends Phaser.Scene {
+        constructor() {
+          super({ key: "titleScene", active: true });
+        }
+        create() {
+          let text = this.add
+            .text(60, 100, " Physics Action Game")
+            .setFontSize(56)
+            .setColor("#ff0");
+          let clickButton = this.add.text(200, 300, "START TO CLICK", {
+            fill: "#0f0"
+          });
+          clickButton.setStroke("#0000ff", 4);
+          clickButton.setFontSize("40px");
+          clickButton.setInteractive();
+          clickButton.on("pointerdown", () => {
+            this.scene.start("MyScene1");
+          });
+        }
+      }
+      class MyScene1 extends Phaser.Scene {
+        constructor() {
+          super({ key: "MyScene1", active: false });
+        }
+        preload() {
+          this.load.image("ground", "./800x60_ground.png");
+          this.load.image("wood1", "./60x60_wood1.png");
+          this.load.image("wood3", "./180x60_wood3.png");
+          this.load.spritesheet("pig", "./playerSprite.png", {
+            frameWidth: 80,
+            frameHeight: 64
+          });
+          this.load.image("friend", "./60x60_jail.png");
+
+          this.load.image("gameover", "./500x100_gameover.png");
+          this.load.image("gameclear", "./500x100_gameclear.png");
+
+          this.load.audio("bgm", "maou_fami003.mp3");
+          this.load.audio("pig_get", "pigSound.mp3");
+          this.load.audio("se_clear", "one02.mp3");
+          this.load.audio("se_over", "one15.mp3");
+        }
+        create() {
+          platforms = this.physics.add.staticGroup();
+          platforms.create(400, 600 - 30, "ground");
+
+          platforms.create(50, 500, "wood1");
+          platforms.create(300, 400, "wood3");
+          platforms.create(500, 300, "wood3");
+          platforms.create(50, 200, "wood1");
+          platforms.create(250, 220, "wood1");
+          platforms.create(500, 120, "wood3");
+          platforms.create(700, 100, "wood1");
+          platforms.create(770, 100, "wood1");
+
+          player = this.physics.add.sprite(100, 450, "pig");
+
+          player.setBounce(0.2); //大きいと跳ね返る
+          player.setCollideWorldBounds(true);
+          //this.add.sprite(50, 200, "ground");
+          player.body.mass = 99;
+          this.physics.add.collider(player, platforms);
+
+          stars = this.physics.add.group();
+          for (var i = 0; i < 12; i++) {
+            var x = Math.floor(Math.random() * 750) + 30;
+            var y = Math.floor(Math.random() * 500) + 10;
+            stars.create(x, y, "friend");
+          }
+          this.physics.add.collider(stars, platforms);
+          this.physics.add.overlap(player, stars, collectStar, null, this);
+
+          cursors = this.input.keyboard.createCursorKeys();
+          bGameStart = true;
+
+          txtTime = this.add
+            .text(10, 20, "Time:31")
+            .setFontSize(32)
+            .setColor("#0");
+          txtScore = this.add
+            .text(250, 20, "0/12")
+            .setFontSize(32)
+            .setColor("#0");
+
+          bgm = this.sound.add("bgm", { loop: true });
+          bgm.play();
+          se = this.sound.add("pig_get");
+        }
+        update() {
+          if (bGameStart == true) {
+            if (cursors.left.isDown) {
+              player.setFrame(1);
+              player.setVelocityX(-160);
+            } else if (cursors.right.isDown) {
+              player.setFrame(0);
+              player.setVelocityX(160);
+            } else {
+              player.setVelocityX(0);
+            }
+
+            if (cursors.up.isDown && player.body.touching.down) {
+              player.setVelocityY(-250);
+            }
+
+            secondCnt = (secondCnt + 1) % 60;
+            if (secondCnt == 0) {
+              remainCnt--;
+              txtTime.text = "Time:" + remainCnt;
+              if (remainCnt < 0) {
+                txtTime.text = "Time:---";
+                bGameStart = false;
+                let gameOverImg = this.add.sprite(400, 250, "gameover");
+                player.setVelocityX(0);
+                bgm.stop();
+                se = this.sound.add("se_over");
+                se.play();
+              }
+            }
+          }
+        }
+      }
+      function collectStar(player, star) {
+        star.disableBody(true, true);
+        score++;
+        txtScore.text = "" + score + "/12";
+        se.play();
+        if (score == 12) {
+          bGameStart = false;
+          let gameEndImg = this.add.sprite(400, 250, "gameclear");
+          player.setVelocityX(0);
+          bgm.stop();
+          se = this.sound.add("se_clear");
+          se.play();
+        }
+      }
+
+      var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        physics: {
+          default: "arcade",
+          arcade: {
+            gravity: { y: 300 },
+            debug: false
+          }
+        },
+        backgroundColor: "#4488aa",
+        audio: { disableWebAudio: true },
+        scene: [titleScene, MyScene1]
+      };
+      var platforms;
+      var player;
+      var cursors;
+      var stars;
+      var secondCnt = 0,
+        remainCnt = 30;
+      var score = 0;
+      var txtScore, txtTime;
+
+      var bGameStart = false;
+      var bgm, se;
+      var game = new Phaser.Game(config);
+    </script>
+  </body>
+</html>
