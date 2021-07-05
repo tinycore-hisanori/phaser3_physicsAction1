@@ -31,6 +31,7 @@
           super({ key: "MyScene1", active: false });
         }
         preload() {
+          this.load.image("bg", "./bg_sky.png");
           this.load.image("ground", "./800x60_ground.png");
           this.load.image("wood1", "./60x60_wood1.png");
           this.load.image("wood3", "./180x60_wood3.png");
@@ -49,6 +50,7 @@
           this.load.audio("se_over", "one15.mp3");
         }
         create() {
+          let bgImg = this.add.tileSprite(400, 300, 800, 600, "bg");
           platforms = this.physics.add.staticGroup();
           platforms.create(400, 600 - 30, "ground");
 
